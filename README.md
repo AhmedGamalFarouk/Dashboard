@@ -5,55 +5,73 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 ## Development server
 
 To start a local development server, run:
+# Dashboard
 
-```bash
-ng serve
+A lightweight Angular dashboard application. This repository contains the source for a simple admin-style dashboard built with Angular.
+
+**Quick overview:**
+- **Framework:** Angular
+- **Purpose:** Demo/admin dashboard UI and employee model/service examples
+
+**Prerequisites:**
+- Node.js (recommended LTS version, e.g., 16+)
+- npm (comes with Node.js)
+- Angular CLI (optional, used for local CLI commands)
+
+## Setup
+
+Install dependencies:
+
+```powershell
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Start the development server:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+npm start
+# or
+ng serve --open
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Open your browser at `http://localhost:4200/`. The app will reload on source changes.
 
-```bash
-ng generate --help
+## Scripts
+- `npm start` — runs the dev server (uses Angular CLI `ng serve`).
+- `npm test` — runs unit tests.
+- `ng build` — compiles the app into the `dist/` folder for production.
+
+Replace or extend scripts in `package.json` as needed for your workflow.
+
+## Project structure (important files)
+- `src/main.ts` — application bootstrap
+- `src/index.html` — main HTML file
+- `src/styles.css` — global styles
+- `src/app/app.ts` — app entry
+- `src/app/app.routes.ts` — routing configuration
+- `src/app/components/dashboard/` — dashboard component
+- `src/app/services/employee.service.ts` — example service for employee data
+- `src/app/models/employee.model.ts` — employee model definition
+
+## Testing
+
+Run unit tests:
+
+```powershell
+npm test
 ```
 
-## Building
+E2E test setup is not included by default — choose a framework (Protractor, Cypress, Playwright) and add configuration if needed.
 
-To build the project run:
+## Contributing
+- Create a branch per feature or bugfix.
+- Follow consistent commit messages and open a pull request for review.
 
-```bash
-ng build
-```
+## Troubleshooting
+- If `ng` is not found, run `npx ng <command>` or install the Angular CLI globally with `npm i -g @angular/cli`.
+- If the dev server fails to start, check for port conflicts or missing dependencies and run `npm install` again.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## License
+Specify a license for the project (e.g., MIT) or add one to `LICENSE`.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+For full Angular CLI docs and commands, see: https://angular.dev/cli

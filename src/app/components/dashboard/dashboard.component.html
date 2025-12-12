@@ -1,0 +1,440 @@
+<!-- HR Admin Dashboard - Professional Dark Theme -->
+<div class="dashboard">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1>HR Admin Dashboard</h1>
+        <p class="header-subtitle">Employee Management System</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="refreshData()" [disabled]="isLoading()">
+          <svg class="icon" [class.spin]="isLoading()" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {{ isLoading() ? 'Loading...' : 'Refresh' }}
+        </button>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v16m8-8H4" />
+          </svg>
+          Add Employee
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Metrics Cards -->
+    <section class="metrics" @listAnimation>
+      <div class="metric-card">
+        <div class="metric-icon bg-slate-700">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-value">{{ metrics().totalEmployees }}</span>
+          <span class="metric-label">Total Employees</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-emerald-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-value">{{ metrics().activeEmployees }}</span>
+          <span class="metric-label">Active</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-amber-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-value">{{ metrics().onLeaveEmployees }}</span>
+          <span class="metric-label">On Leave</span>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon bg-red-600">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <div class="metric-content">
+          <span class="metric-value">{{ metrics().terminatedEmployees }}</span>
+          <span class="metric-label">Terminated</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Search -->
+    <section class="filters">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" placeholder="Search employees..." class="search-input" [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)">
+      </div>
+
+      <div class="filter-group">
+        <select class="filter-select" [value]="selectedDepartment()"
+          (change)="selectedDepartment.set($any($event.target).value)">
+          <option value="all">All Departments</option>
+          @for (dept of departments; track dept) {
+          <option [value]="dept">{{ dept }}</option>
+          }
+        </select>
+
+        <select class="filter-select" [value]="selectedStatus()"
+          (change)="selectedStatus.set($any($event.target).value)">
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="on-leave">On Leave</option>
+          <option value="terminated">Terminated</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    @if (isLoading() && employees().length === 0) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading employees...</p>
+    </div>
+    }
+
+    <!-- Error State -->
+    @if (error()) {
+    <div class="error-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <p>{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="refreshData()">Try Again</button>
+    </div>
+    }
+
+    <!-- Employees Table -->
+    @if (!isLoading() || employees().length > 0) {
+    <section class="table-container">
+      <div class="table-header">
+        <h2>Employees</h2>
+        <span class="record-count">{{ filteredEmployees().length }} records</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Department</th>
+              <th>Position</th>
+              <th>Status</th>
+              <th>Hire Date</th>
+              <th>Salary</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody [@listAnimation]="filteredEmployees().length">
+            @for (employee of filteredEmployees(); track trackByEmployeeId($index, employee)) {
+            <tr class="table-row">
+              <td>
+                <div class="employee-cell">
+                  <div class="avatar">
+                    {{ getEmployeeInitials(employee) }}
+                  </div>
+                  <div class="employee-info">
+                    <span class="employee-name">{{ employee.firstname }} {{ employee.lastname }}</span>
+                    <span class="employee-email">{{ employee.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="department-badge">{{ employee.department }}</span>
+              </td>
+              <td>{{ employee.position }}</td>
+              <td>
+                <span class="status-badge {{ getStatusClass(employee.status) }}">
+                  {{ getStatusLabel(employee.status) }}
+                </span>
+              </td>
+              <td>{{ formatDate(employee.hireDate || '') }}</td>
+              <td class="salary">{{ formatSalary(employee.salary) }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="action-btn" title="View" (click)="openViewModal(employee)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                  <button class="action-btn" title="Edit" (click)="openEditModal(employee)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button class="action-btn action-btn-danger" title="Delete" (click)="openDeleteModal(employee)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="7" class="empty-state">
+                <p>No employees found matching your criteria.</p>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    }
+
+  </main>
+
+  <!-- Modal Overlay -->
+  @if (modalMode()) {
+  <div class="modal-overlay" @fadeAnimation (click)="closeModal()">
+    <div class="modal" @slideUpAnimation (click)="$event.stopPropagation()">
+
+      <!-- Create/Edit Modal -->
+      @if (modalMode() === 'create' || modalMode() === 'edit') {
+      <div class="modal-header">
+        <h3>{{ modalMode() === 'create' ? 'Add New Employee' : 'Edit Employee' }}</h3>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-body" (submit)="$event.preventDefault(); handleSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstname">First Name</label>
+            <input type="text" id="firstname" class="form-input" [value]="formData().firstname"
+              (input)="updateFormField('firstname', $any($event.target).value)" required>
+          </div>
+          <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input type="text" id="lastname" class="form-input" [value]="formData().lastname"
+              (input)="updateFormField('lastname', $any($event.target).value)" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-input" [value]="formData().email"
+              (input)="updateFormField('email', $any($event.target).value)" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" class="form-input" [value]="formData().phone"
+              (input)="updateFormField('phone', $any($event.target).value)">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="birthday">Birthday</label>
+            <input type="date" id="birthday" class="form-input" [value]="formData().birthday"
+              (input)="updateFormField('birthday', $any($event.target).value)">
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" class="form-input" [value]="formData().gender"
+              (change)="updateFormField('gender', $any($event.target).value)">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="department">Department</label>
+            <select id="department" class="form-input" [value]="formData().department"
+              (change)="updateFormField('department', $any($event.target).value)">
+              @for (dept of departments; track dept) {
+              <option [value]="dept">{{ dept }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="position">Position</label>
+            <select id="position" class="form-input" [value]="formData().position"
+              (change)="updateFormField('position', $any($event.target).value)">
+              @for (pos of positions; track pos) {
+              <option [value]="pos">{{ pos }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" class="form-input" [value]="formData().status"
+              (change)="updateFormField('status', $any($event.target).value)">
+              <option value="active">Active</option>
+              <option value="on-leave">On Leave</option>
+              <option value="terminated">Terminated</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" class="form-input" [value]="formData().city"
+              (input)="updateFormField('city', $any($event.target).value)">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country</label>
+          <input type="text" id="country" class="form-input" [value]="formData().country"
+            (input)="updateFormField('country', $any($event.target).value)">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            {{ modalMode() === 'create' ? 'Create Employee' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+      }
+
+      <!-- View Modal -->
+      @if (modalMode() === 'view' && selectedEmployee()) {
+      <div class="modal-header">
+        <h3>Employee Details</h3>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body view-modal">
+        <div class="view-header">
+          <div class="view-avatar">
+            {{ getEmployeeInitials(selectedEmployee()!) }}
+          </div>
+          <div class="view-title">
+            <h4>{{ selectedEmployee()!.firstname }} {{ selectedEmployee()!.lastname }}</h4>
+            <p>{{ selectedEmployee()!.position }}</p>
+          </div>
+          <span class="status-badge {{ getStatusClass(selectedEmployee()!.status) }}">
+            {{ getStatusLabel(selectedEmployee()!.status) }}
+          </span>
+        </div>
+
+        <div class="view-grid">
+          <div class="view-item">
+            <span class="view-label">Email</span>
+            <span class="view-value">{{ selectedEmployee()!.email }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Phone</span>
+            <span class="view-value">{{ selectedEmployee()!.phone }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Department</span>
+            <span class="view-value">{{ selectedEmployee()!.department }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Birthday</span>
+            <span class="view-value">{{ formatDate(selectedEmployee()!.birthday) }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Hire Date</span>
+            <span class="view-value">{{ formatDate(selectedEmployee()!.hireDate || '') }}</span>
+          </div>
+          <div class="view-item">
+            <span class="view-label">Salary</span>
+            <span class="view-value">{{ formatSalary(selectedEmployee()!.salary) }}</span>
+          </div>
+          <div class="view-item full-width">
+            <span class="view-label">Location</span>
+            <span class="view-value">{{ selectedEmployee()!.address.city }}, {{ selectedEmployee()!.address.country
+              }}</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+          <button class="btn btn-primary" (click)="openEditModal(selectedEmployee()!)">Edit Employee</button>
+        </div>
+      </div>
+      }
+
+      <!-- Delete Modal -->
+      @if (modalMode() === 'delete' && selectedEmployee()) {
+      <div class="modal-header modal-header-danger">
+        <h3>Delete Employee</h3>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="delete-warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <p>Are you sure you want to delete <strong>{{ selectedEmployee()!.firstname }} {{ selectedEmployee()!.lastname
+              }}</strong>?</p>
+          <p class="delete-subtitle">This action cannot be undone.</p>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Delete Employee</button>
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+  }
+
+</div>
