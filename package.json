@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "predeploy": "ng build --base-href /Dashboard/",
-    "deploy": "gh-pages -d dist/Dashboard",
+    "deploy": "gh-pages -d dist/Dashboard/browser",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
